@@ -1,0 +1,18 @@
+{
+  "name": "discord-tebakangka-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord sederhana dengan game tebak angka",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
