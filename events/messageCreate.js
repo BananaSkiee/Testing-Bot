@@ -4,6 +4,7 @@ const { EmbedBuilder } = require("discord.js");
 const tebakAngka = require("../modules/tebakAngka");
 const tebakRandom = require("../modules/tebakRandom");
 const helpCommand = require("../modules/help.js");
+const autoEmoji = require("../modules/autoEmoji.js"); // Tambahkan baris ini
 
 module.exports = {
   name: "messageCreate",
@@ -12,6 +13,9 @@ module.exports = {
 
     // Jalankan command help
     await helpCommand(message, client);
+
+    // Jalankan modul autoEmoji
+    await autoEmoji(message);
 
     const msg = message.content.toLowerCase();
     const channelId = message.channel.id;
