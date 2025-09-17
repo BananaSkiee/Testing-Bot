@@ -1,12 +1,9 @@
 // index.js
-require("./keep_alive"); // aktifkan server kecil biar bot tetap nyala
 
 const fs = require("fs");
 const path = require("path");
 const { Client, GatewayIntentBits, Partials, Collection } = require("discord.js");
-
-// Ambil token dari environment variables Railway / .env
-const TOKEN = process.env.TOKEN;
+const config = require("./config");
 
 // Buat client Discord
 const client = new Client({
@@ -14,10 +11,51 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.DirectMessages
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildPresences, // Diperlukan untuk status online
+        GatewayIntentBits.GuildMembers // Diperlukan untuk mengakses member
     ],
-    partials: [Partials.Channel]
+    partials: [Partials.Channel, Partials.GuildMember] // Partials diperlukan untuk data member
 });
+
+// Fungsi untuk memperbarui jumlah anggota online
+async function updateOnline(guild) {
+    try {
+        await guild.members.fetch({ withPresences: true });
+
+        const onlineCount = guild.members.cache.filter(
+            (m) =>
+                !m.user.bot &&
+                ["online", "idle", "dnd"].includes(m.presence?.status)
+        ).size;
+
+        const voiceChannel = guild.channels.cache.get(config.voiceChannelId);
+        const logChannel = guild.channels.cache.get(config.logChannelId);
+
+        if (voiceChannel && voiceChannel.isVoiceBased()) {
+            await voiceChannel.setName(`「 Online: ${onlineCount} 」`);
+            console.log(`✅ Channel renamed to: Online: ${onlineCount}`);
+
+            if (logChannel && logChannel.isTextBased()) {
+                logChannel.send({
+                    content: `📢 Update status online!\nSaat ini ada **${onlineCount}** member yang aktif di server.`,
+                    allowedMentions: { parse: [] }
+                });
+            }
+        } else {
+            console.warn("⚠️ Voice channel tidak ditemukan.");
+            if (logChannel && logChannel.isTextBased()) {
+                logChannel.send("⚠️ Gagal update voice channel: Tidak ditemukan.");
+            }
+        }
+    } catch (err) {
+        console.error("❌ Gagal update:", err.message);
+        const logChannel = guild.channels.cache.get(config.logChannelId);
+        if (logChannel && logChannel.isTextBased()) {
+            logChannel.send(`❌ Error saat update: ${err.message}`);
+        }
+    }
+}
 
 // Event handler loader
 client.events = new Collection();
@@ -33,10 +71,22 @@ for (const file of eventFiles) {
     }
 }
 
-// Log ketika bot online
-client.once("ready", () => {
+// Event 'ready'
+client.once("ready", async () => {
     console.log(`✅ Bot login sebagai ${client.user.tag}`);
+    
+    // Perbarui status online setiap 5 menit
+    setInterval(() => {
+        client.guilds.cache.forEach(guild => {
+            updateOnline(guild);
+        });
+    }, 300000); // 300000 ms = 5 menit
+
+    // Jalankan pertama kali saat bot online
+    client.guilds.cache.forEach(guild => {
+        updateOnline(guild);
+    });
 });
 
 // Login ke Discord
-client.login(TOKEN);
+client.login(config.TOKEN);
