@@ -12,13 +12,12 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.GuildPresences, // Diperlukan untuk status online
-        GatewayIntentBits.GuildMembers // Diperlukan untuk mengakses member
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMembers
     ],
-    partials: [Partials.Channel, Partials.GuildMember] // Partials diperlukan untuk data member
+    partials: [Partials.Channel, Partials.GuildMember]
 });
 
-// Fungsi untuk memperbarui jumlah anggota online
 async function updateOnline(guild) {
     try {
         await guild.members.fetch({ withPresences: true });
