@@ -4,7 +4,8 @@
   "description": "Bot Discord sederhana",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "heroku-postbuild": "npm install"
   },
   "dependencies": {
     "discord.js": "^14.15.3",
