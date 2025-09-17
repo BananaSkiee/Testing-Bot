@@ -2,12 +2,23 @@
 
 const { games: tebakAngkaGames } = require("../modules/tebakAngka");
 const autoGreeting = require("../modules/autoGreeting.js");
+const http = require('http');
 
 module.exports = {
   name: "ready",
   once: true,
   execute(client) {
     console.log(`✅ Bot online sebagai ${client.user.tag}`);
+
+    // Tambahkan web server sederhana untuk health check server hosting
+    const server = http.createServer((req, res) => {
+      res.writeHead(200);
+      res.end('Bot is running!');
+    });
+
+    server.listen(process.env.PORT || 3000, () => {
+      console.log(`✅ Web server berjalan di port ${process.env.PORT || 3000}`);
+    });
 
     // Reset game Tebak Angka
     for (const key in tebakAngkaGames) {
@@ -17,7 +28,7 @@ module.exports = {
     // Jalankan autoGreeting
     autoGreeting(client);
 
-    // 💡 Status bot berganti tiap 10 detik (pilih salah satu)
+    // 💡 Status bot berganti tiap 10 detik
     const statuses = [
       "🌌 Menembus batas kemungkinan",
       "📖 Membaca alur takdir",
@@ -38,6 +49,6 @@ module.exports = {
     setInterval(() => {
       client.user.setActivity(statuses[i], { type: 0 });
       i = (i + 1) % statuses.length;
-    }, 10000); // ganti setiap 10 detik
+    }, 10000);
   }
 };
