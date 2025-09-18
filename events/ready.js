@@ -2,12 +2,13 @@
 
 const { games: tebakAngkaGames } = require("../modules/tebakAngka");
 const autoGreeting = require("../modules/autoGreeting.js");
+const slashCommandSetup = require("../modules/slashCommandSetup"); // ✅ Tambahan
 const http = require('http');
 
 module.exports = {
   name: "ready",
   once: true,
-  execute(client) {
+  async execute(client) {
     console.log(`✅ Bot online sebagai ${client.user.tag}`);
 
     // Tambahkan web server sederhana untuk health check server hosting
@@ -27,6 +28,13 @@ module.exports = {
 
     // Jalankan autoGreeting
     autoGreeting(client);
+
+    // 🟩 Setup slash command
+    try {
+      await slashCommandSetup(client);
+    } catch (err) {
+      console.error("❌ Gagal setup slash command:", err);
+    }
 
     // 💡 Status bot berganti tiap 10 detik
     const statuses = [
