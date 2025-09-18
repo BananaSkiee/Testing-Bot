@@ -3,11 +3,12 @@
 const { games: tebakAngkaGames } = require("../modules/tebakAngka");
 const autoGreeting = require("../modules/autoGreeting.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
-const joinVoice = require("../modules/joinvoice.js"); // ✅ Tambahkan ini
+const joinVoice = require("../modules/joinvoice.js");
 const http = require('http');
 
 module.exports = {
-  name: "ready",
+  // ✅ Ganti "ready" menjadi "clientReady" untuk menghilangkan peringatan
+  name: "clientReady", 
   once: true,
   async execute(client) {
     console.log(`✅ Bot online sebagai ${client.user.tag}`);
@@ -39,7 +40,7 @@ module.exports = {
     
     // 🔊 Join voice channel
     try {
-      await joinVoice(client); // ✅ Panggil modul joinvoice di sini
+      await joinVoice(client);
     } catch (err) {
       console.error("❌ Gagal join voice channel:", err);
     }
