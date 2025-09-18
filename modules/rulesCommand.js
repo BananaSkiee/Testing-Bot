@@ -1,18 +1,34 @@
 // modules/rulesCommand.js
+
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-module.exports = async function (message, options = { checkDuplicate: false }) {
+/**
+ * Mengirim embed rules dan punishment ke channel, bisa dipanggil dari prefix atau slash command.
+ * @param {import("discord.js").Interaction | import("discord.js").Message} interactionOrMessage
+ * @param {object} options
+ * @param {boolean} options.checkDuplicate
+ */
+module.exports = async function (interactionOrMessage, options = { checkDuplicate: false }) {
+    // Tentukan apakah inputnya adalah Interaksi atau Pesan
+    const isInteraction = interactionOrMessage.isChatInputCommand;
+    const channel = interactionOrMessage.channel;
+    
     try {
         if (options.checkDuplicate) {
-            const fetchedMessages = await message.channel.messages.fetch({ limit: 50 });
+            const fetchedMessages = await channel.messages.fetch({ limit: 50 });
             const alreadySent = fetchedMessages.some(msg =>
-                msg.author.id === message.client.user.id &&
+                msg.author.id === interactionOrMessage.client.user.id &&
                 msg.embeds.length > 0 &&
                 msg.embeds[0].title === "📜 Rules, Punishment & Sistem Warn"
             );
 
             if (alreadySent) {
-                return message.reply("⚠️ Rules sudah pernah dikirim di channel ini.");
+                // Balas sesuai jenis input (Interaction atau Message)
+                if (isInteraction) {
+                    return interactionOrMessage.reply({ content: "⚠️ Rules sudah pernah dikirim di channel ini.", ephemeral: true });
+                } else {
+                    return interactionOrMessage.reply("⚠️ Rules sudah pernah dikirim di channel ini.");
+                }
             }
         }
 
@@ -36,13 +52,29 @@ module.exports = async function (message, options = { checkDuplicate: false }) {
                 .setStyle(ButtonStyle.Danger)
         );
 
-        await message.channel.send({ embeds: [mainEmbed], components: [row] });
+        await channel.send({ embeds: [mainEmbed], components: [row] });
+
+        // Beri konfirmasi balasan sesuai jenis input
         if (options.checkDuplicate) {
-            await message.reply("✅ Rules berhasil dikirim di channel ini.");
+            if (isInteraction) {
+                await interactionOrMessage.reply({ content: "✅ Rules berhasil dikirim di channel ini!", ephemeral: true });
+            } else {
+                await interactionOrMessage.reply("✅ Rules berhasil dikirim di channel ini!");
+            }
         }
 
     } catch (err) {
-        console.error("❌ Error saat menjalankan cmdRules:", err);
-        return message.reply("❌ Terjadi error saat mengirim rules.");
+        console.error("❌ Error saat menjalankan rulesCommand:", err);
+        // Tangani error sesuai jenis input
+        if (isInteraction) {
+            // Cek apakah balasan sudah dikirim sebelumnya
+            if (interactionOrMessage.replied || interactionOrMessage.deferred) {
+                return interactionOrMessage.followUp({ content: "❌ Terjadi error saat mengirim rules.", ephemeral: true });
+            } else {
+                return interactionOrMessage.reply({ content: "❌ Terjadi error saat mengirim rules.", ephemeral: true });
+            }
+        } else {
+            return interactionOrMessage.reply("❌ Terjadi error saat mengirim rules.");
+        }
     }
 };
