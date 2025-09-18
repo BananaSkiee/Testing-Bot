@@ -2,7 +2,8 @@
 
 const { games: tebakAngkaGames } = require("../modules/tebakAngka");
 const autoGreeting = require("../modules/autoGreeting.js");
-const slashCommandSetup = require("../modules/slashCommandSetup"); // ✅ Tambahan
+const slashCommandSetup = require("../modules/slashCommandSetup");
+const joinVoice = require("../modules/joinvoice.js"); // ✅ Tambahkan ini
 const http = require('http');
 
 module.exports = {
@@ -34,6 +35,13 @@ module.exports = {
       await slashCommandSetup(client);
     } catch (err) {
       console.error("❌ Gagal setup slash command:", err);
+    }
+    
+    // 🔊 Join voice channel
+    try {
+      await joinVoice(client); // ✅ Panggil modul joinvoice di sini
+    } catch (err) {
+      console.error("❌ Gagal join voice channel:", err);
     }
 
     // 💡 Status bot berganti tiap 10 detik
